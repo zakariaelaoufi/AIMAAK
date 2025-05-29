@@ -6,10 +6,16 @@ from fastapi.params import Body
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, AIMessage
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+GEN_API_KEY = os.environ.get("GEN_API_KEY")
 
 # Initialize model
 aitest = ChatGoogleGenerativeAI(
-    google_api_key="AIzaSyCeMyHyVV_Ri8yu_Oiuco6p--jPkzsc_Gk",  # ⚠️ Don't expose secrets in production
+    google_api_key=GEN_API_KEY,
     temperature=0.4,
     model="gemini-2.0-flash"
 )
