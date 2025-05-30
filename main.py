@@ -8,6 +8,7 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from dotenv import load_dotenv
 import os
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -58,9 +59,23 @@ chat_prompt = ChatPromptTemplate.from_template(prompt_message)
 # Create FastAPI app
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify your frontend's URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("startup")
 async def start_event():
-    app.state.redis = Redis(host='localhost', port=6379, decode_responses=True)  # decode_responses to get str instead of bytes
+    app.state.redis = Redis(
+        host='redis-13630.c327.europe-west1-2.gce.redns.redis-cloud.com',
+        port=13630,
+        decode_responses=True,
+        username="default",
+        password="6Yx67D3Ij05yo7ICq64StC8rdYHK128Z",
+    )
     app.state.http_client = httpx.AsyncClient()
 
 @app.on_event("shutdown")
