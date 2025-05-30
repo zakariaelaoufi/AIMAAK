@@ -14,6 +14,10 @@ load_dotenv()
 
 GEN_API_KEY = os.environ.get("GEN_API_KEY")
 
+REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+REDIS_HOST = os.environ.get("REDIS_HOST")
+REDIS_PORT = os.environ.get("REDIS_PORT")
+
 # Initialize model
 aitest = ChatGoogleGenerativeAI(
     google_api_key=GEN_API_KEY,
@@ -70,11 +74,11 @@ app.add_middleware(
 @app.on_event("startup")
 async def start_event():
     app.state.redis = Redis(
-        host='redis-13630.c327.europe-west1-2.gce.redns.redis-cloud.com',
-        port=13630,
+        host=REDIS_HOST,
+        port=REDIS_PORT,
         decode_responses=True,
         username="default",
-        password="6Yx67D3Ij05yo7ICq64StC8rdYHK128Z",
+        password=REDIS_PASSWORD,
     )
     app.state.http_client = httpx.AsyncClient()
 
