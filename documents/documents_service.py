@@ -57,7 +57,7 @@ async def load_vector_store(source_path: str, embeddings) -> Optional[FAISS]:
 
 async def initialize_qa_chat(filepath: str, vector_store_path: str) -> Optional[RetrievalQA]:
     global qa_chain
-    if qa_chain:
+    if qa_chain is not None:
         return qa_chain
 
     try:
