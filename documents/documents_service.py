@@ -14,7 +14,8 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 GEN_API_KEY = os.environ.get("GEN_API_KEY")
-qa_chain = None
+qa_chain: Optional[RetrievalQA] = None
+
 
 def get_llm():
     return ChatGoogleGenerativeAI(
@@ -23,11 +24,13 @@ def get_llm():
         model="gemini-2.0-flash"
     )
 
+
 def get_embeddings():
     return GoogleGenerativeAIEmbeddings(
         model="models/text-embedding-004",
         google_api_key=GEN_API_KEY
     )
+
 
 async def create_vector_db(filepath: str, vector_store_path: str) -> Optional[FAISS]:
     try:
@@ -47,6 +50,7 @@ async def create_vector_db(filepath: str, vector_store_path: str) -> Optional[FA
         logger.error(f"Failed to create vector DB: {e}")
         return None
 
+
 async def load_vector_store(source_path: str, embeddings) -> Optional[FAISS]:
     try:
         if Path(source_path).exists():
@@ -55,20 +59,25 @@ async def load_vector_store(source_path: str, embeddings) -> Optional[FAISS]:
         logger.error(f"Failed to load vector store: {e}")
     return None
 
+
 async def initialize_qa_chat(filepath: str, vector_store_path: str) -> Optional[RetrievalQA]:
     global qa_chain
     if qa_chain is not None:
-        return qa_chain
+        logger.info("QA chain already initialized")
+        return get_qa_chain()
 
     try:
+        logger.info(f"Initializing QA chain with file: {filepath}")
         if not Path(filepath).exists():
             raise FileNotFoundError(f"File not found: {filepath}")
 
         embeddings = get_embeddings()
 
         if Path(vector_store_path).exists():
+            logger.info(f"Loading existing vector store from: {vector_store_path}")
             vector_store = await load_vector_store(vector_store_path, embeddings)
         else:
+            logger.info(f"Creating new vector store at: {vector_store_path}")
             vector_store = await create_vector_db(filepath, vector_store_path)
 
         if not vector_store:
@@ -90,4 +99,9 @@ async def initialize_qa_chat(filepath: str, vector_store_path: str) -> Optional[
 
     except Exception as e:
         logger.error(f"Failed to initialize QA chat: {e}")
+        qa_chain = None
         raise HTTPException(status_code=500, detail=f"Failed to initialize chatbot: {str(e)}")
+
+
+def get_qa_chain() -> Optional[RetrievalQA]:
+    return qa_chain

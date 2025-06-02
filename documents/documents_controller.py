@@ -1,6 +1,6 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from fastapi.params import Body
-from .documents_service import qa_chain
+from .documents_service import get_qa_chain
 from langchain_core.prompts import ChatPromptTemplate
 import logging
 
@@ -37,9 +37,14 @@ async def document_chatbot_response(query: dict = Body(...)):
     if not question:
         return {"error": "Missing 'question' in request body"}
 
+    qa_chain = get_qa_chain()
     if qa_chain:
         response = qa_chain.invoke({"query": question})
         answer = response.get("result", "Ma 3reftch.")
         return answer
     else:
         logger.error(f"Failed to create the chain")
+        raise HTTPException(
+            status_code=503,
+            detail="Document chatbot is not available"
+        )
