@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from fastapi.params import Body
-from .documents_service import get_qa_chain
+from .documents_service import get_qa_chain, get_cache_status_service
 from langchain_core.prompts import ChatPromptTemplate
 import logging
 
@@ -48,3 +48,8 @@ async def document_chatbot_response(query: dict = Body(...)):
             status_code=503,
             detail="Document chatbot is not available"
         )
+
+
+@router.get("/cache/status", status_code=status.HTTP_200_OK)
+async def get_cache_status():
+    return get_cache_status_service()

@@ -14,7 +14,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 GEN_API_KEY = os.environ.get("GEN_API_KEY")
-qa_chain: Optional[RetrievalQA] = None
+_qa_chain: Optional[RetrievalQA] = None
 
 
 def get_llm():
@@ -61,8 +61,9 @@ async def load_vector_store(source_path: str, embeddings) -> Optional[FAISS]:
 
 
 async def initialize_qa_chat(filepath: str, vector_store_path: str) -> Optional[RetrievalQA]:
-    global qa_chain
-    if qa_chain is not None:
+    global _qa_chain
+    if _qa_chain is not None:
+        print("hello")
         logger.info("QA chain already initialized")
         return get_qa_chain()
 
@@ -88,14 +89,14 @@ async def initialize_qa_chat(filepath: str, vector_store_path: str) -> Optional[
             search_kwargs={"k": 2}
         )
 
-        qa_chain = RetrievalQA.from_chain_type(
+        _qa_chain = RetrievalQA.from_chain_type(
             llm=get_llm(),
             retriever=retriever,
             return_source_documents=True
         )
 
         logger.info("QA chatbot initialized")
-        return qa_chain
+        return _qa_chain
 
     except Exception as e:
         logger.error(f"Failed to initialize QA chat: {e}")
@@ -104,4 +105,11 @@ async def initialize_qa_chat(filepath: str, vector_store_path: str) -> Optional[
 
 
 def get_qa_chain() -> Optional[RetrievalQA]:
-    return qa_chain
+    return _qa_chain
+
+
+def get_cache_status_service() -> dict:
+    return {
+        "qa_chain_cached": _qa_chain is not None,
+        "vector_store_exists": Path("./vector_store").exists()
+    }
