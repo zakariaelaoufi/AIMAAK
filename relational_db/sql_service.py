@@ -13,9 +13,11 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 GEN_API_KEY = os.getenv("GEN_API_KEY")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 # Constants
-DB_URI = "mysql+mysqlconnector://root:root@localhost:3306/product_management"
+DB_URI = os.getenv("DB_URI")
+
 
 # Global variables for caching
 db: Optional[SQLDatabase] = None
@@ -81,8 +83,15 @@ async def initialize_db_and_schema():
     global db, schema_cache
     try:
         db = await initialize_database(DB_URI)
+        # Test connection by fetching schema or running a simple query
+        test_schema = await get_schema_info(db)
+        if test_schema:
+            logger.info("Database connection successful.")
+        else:
+            logger.error("Database connection failed: No schema found.")
+            return False
         if not schema_cache:
-            schema_cache = await get_schema_info(db)
+            schema_cache = test_schema
             logger.info("Schema fetched and cached.")
         return True
     except Exception as e:
