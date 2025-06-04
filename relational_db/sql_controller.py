@@ -19,7 +19,6 @@ async def client_question_answer(payload: dict = Body(...)):
     question = payload.get("question")
     if not question:
         raise HTTPException(status_code=400, detail="Missing question.")
-
     sql_query = await generate_sql_query(question)
     sql_query = clean_query(sql_query)
     query_result = await run_query(sql_query)

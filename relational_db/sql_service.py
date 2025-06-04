@@ -36,7 +36,7 @@ aimaak_llm = get_llm()
 
 # Prompt templates
 sql_query_prompt = ChatPromptTemplate.from_template("""
-You are a skilled MySQL assistant. Given the table schema and a natural language question, generate a syntactically correct and efficient SQL query that accurately answers the question.
+You are a skilled SQL assistant. Given the table schema and a natural language question in moroccan darija, arabic, or french, generate a syntactically correct and efficient SQL query that accurately answers the question.
 
 Schema:
 {schema}
@@ -48,7 +48,7 @@ SQL Query:
 """)
 
 nlp_result_explanation_prompt = ChatPromptTemplate.from_template("""
-You are a helpful assistant. Based on the user's question and the SQL query result provided, write a natural, clear, and concise response that summarizes the result in plain language.
+You are a helpful assistant. Based on the user's question and the SQL query result provided, write a natural, clear, and concise moroccan darija response that summarizes the result in plain language.
 
 User Question:
 {question}
