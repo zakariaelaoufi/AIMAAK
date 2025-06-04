@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from redis import Redis
 import httpx
 from documents.documents_service import initialize_qa_chat
+from relational_db.sql_service import initialize_db_and_schema
 from documents.documents_controller import router as documents_router
 from general.general_chat_controller import router as general_chat_router
+from relational_db.sql_controller import router as relational_db_router
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,11 @@ async def startup_event():
             logger.info("AIMaak Chatbot pre-initialized successfully")
         else:
             logger.error("Failed to initialize AIMaak Chatbot")
+        success2 = await initialize_db_and_schema()
+        if success2:
+            logger.info("Database and schema initialized.")
+        else:
+            logger.error("Failed to initialize database and schema.")
     except Exception as e:
         print(f"Startup failed: {e}")
 
@@ -33,6 +40,7 @@ async def shutdown_event():
 
 app.include_router(general_chat_router)
 app.include_router(documents_router)
+app.include_router(relational_db_router)
 
 @app.get("/")
 def root():

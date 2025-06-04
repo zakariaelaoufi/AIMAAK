@@ -1,0 +1,92 @@
+-- Create the database
+CREATE DATABASE IF NOT EXISTS product_management;
+USE product_management;
+
+-- 1. CLIENTS
+CREATE TABLE clients (
+  client_id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100),
+  email VARCHAR(100) UNIQUE,
+  phone VARCHAR(20),
+  created_at DATETIME DEFAULT NOW()
+);
+
+-- 2. CATEGORIES
+CREATE TABLE categories (
+  category_id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) UNIQUE,
+  description TEXT
+);
+
+-- 3. PRODUCTS
+CREATE TABLE products (
+  product_id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100),
+  description TEXT,
+  price DECIMAL(10,2),
+  initial_stock INT,
+  category_id INT,
+  FOREIGN KEY (category_id) REFERENCES categories(category_id)
+);
+
+-- 4. ORDERS
+CREATE TABLE orders (
+  order_id INT PRIMARY KEY AUTO_INCREMENT,
+  client_id INT,
+  order_date DATETIME DEFAULT NOW(),
+  status VARCHAR(50) DEFAULT 'Pending',
+  FOREIGN KEY (client_id) REFERENCES clients(client_id)
+);
+
+-- 5. ORDER ITEMS
+CREATE TABLE order_items (
+  order_item_id INT PRIMARY KEY AUTO_INCREMENT,
+  order_id INT,
+  product_id INT,
+  quantity INT,
+  unit_price DECIMAL(10,2),
+  FOREIGN KEY (order_id) REFERENCES orders(order_id),
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+-- Insert fake data
+
+-- CATEGORIES
+INSERT INTO categories (name, description) VALUES
+('Electronics', 'Devices and gadgets like phones, laptops, etc.'),
+('Accessories', 'Chargers, cases, cables, etc.'),
+('Office Supplies', 'Chairs, desks, stationery, etc.'),
+('Audio', 'Headphones, speakers, sound systems'),
+('Furniture', 'Home and office furniture');
+
+-- CLIENTS
+INSERT INTO clients (name, email, phone) VALUES
+('Zakaria El Amrani', 'zakaria@example.com', '+212600000001'),
+('Lina Khadiri', 'lina.k@example.com', '+212600000002'),
+('Yassine Bouchtaoui', 'yassineb@example.com', '+212600000003'),
+('Nada El Fassi', 'nada.f@example.com', '+212600000004'),
+('Amine Sebti', 'amine.s@example.com', '+212600000005');
+
+-- PRODUCTS
+INSERT INTO products (name, description, price, initial_stock, category_id) VALUES
+('Gaming Laptop', 'High-performance laptop with RTX graphics', 1899.99, 10, 1),
+('Bluetooth Headphones', 'Noise-cancelling over-ear headphones', 129.50, 20, 4),
+('Smartphone X', 'Latest model with OLED display', 999.00, 15, 1),
+('USB-C Charger', 'Fast-charging 45W adapter', 29.99, 50, 2),
+('Ergonomic Chair', 'Adjustable mesh office chair', 249.00, 7, 3);
+
+-- ORDERS
+INSERT INTO orders (client_id, status) VALUES
+(1, 'Pending'),
+(2, 'Shipped'),
+(3, 'Delivered'),
+(4, 'Pending'),
+(5, 'Delivered');
+
+-- ORDER ITEMS
+INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES
+(1, 1, 1, 1899.99),  -- Zakaria buys 1 Gaming Laptop
+(1, 2, 2, 129.50),   -- Zakaria buys 2 Headphones
+(2, 3, 1, 999.00),   -- Lina buys 1 Smartphone
+(3, 4, 3, 29.99),    -- Yassine buys 3 Chargers
+(4, 5, 1, 249.00);   -- Nada buys 1 Chair
