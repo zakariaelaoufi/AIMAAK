@@ -69,3 +69,4 @@ python-multipart~=0.0.20
 langchain-community~=0.3.24
 pypdf
 mysql-connector-python
+faiss-cpu
