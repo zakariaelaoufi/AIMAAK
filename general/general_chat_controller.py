@@ -84,7 +84,7 @@ async def get_chatbot_history(request: Request):
 @router.post("", status_code=status.HTTP_200_OK)
 async def post_chatbot_response(request: Request, query: dict = Body(...)):
     redis = request.app.state.redis
-    message = query.get("message")
+    message = query.get("question")
 
     if not message:
         return {"error": "Missing 'message' in request body"}

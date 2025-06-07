@@ -1,0 +1,178 @@
+-- =========================
+-- ONLINE STORE DATABASE
+-- =========================
+
+-- Drop views first
+DROP VIEW IF EXISTS ProductStockView;
+DROP VIEW IF EXISTS ClientOrderStatusView;
+
+-- Drop tables in reverse order of dependencies
+DROP TABLE IF EXISTS Payment;
+DROP TABLE IF EXISTS OrderItem;
+DROP TABLE IF EXISTS ClientOrder;
+DROP TABLE IF EXISTS Client;
+DROP TABLE IF EXISTS Product;
+DROP TABLE IF EXISTS Category;
+
+-- =========================
+-- TABLE CREATION
+-- =========================
+
+CREATE TABLE Category (
+    CategoryID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Description TEXT
+);
+
+CREATE TABLE Product (
+    ProductID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(150) NOT NULL,
+    Description TEXT,
+    Price DECIMAL(10, 2) NOT NULL,
+    InitialQuantity INT NOT NULL,
+    CategoryID INT,
+    FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
+);
+
+CREATE TABLE Client (
+    ClientID INT PRIMARY KEY AUTO_INCREMENT,
+    FullName VARCHAR(150),
+    Email VARCHAR(150) UNIQUE,
+    Address TEXT
+);
+
+CREATE TABLE ClientOrder (
+    OrderID INT PRIMARY KEY AUTO_INCREMENT,
+    ClientID INT,
+    OrderDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Status VARCHAR(50) DEFAULT 'Pending',
+    TotalAmount DECIMAL(10, 2),
+    FOREIGN KEY (ClientID) REFERENCES Client(ClientID)
+);
+
+CREATE TABLE OrderItem (
+    OrderItemID INT PRIMARY KEY AUTO_INCREMENT,
+    OrderID INT,
+    ProductID INT,
+    Quantity INT,
+    UnitPrice DECIMAL(10, 2),
+    FOREIGN KEY (OrderID) REFERENCES ClientOrder(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID)
+);
+
+CREATE TABLE Payment (
+    PaymentID INT PRIMARY KEY AUTO_INCREMENT,
+    OrderID INT,
+    PaymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Amount DECIMAL(10, 2),
+    PaymentMethod VARCHAR(50),
+    Status VARCHAR(50),
+    FOREIGN KEY (OrderID) REFERENCES ClientOrder(OrderID)
+);
+
+-- =========================
+-- INSERTING REALISTIC DATA
+-- =========================
+
+-- Categories
+INSERT INTO Category (Name, Description) VALUES
+('Electronics', 'Electronic gadgets and devices'),
+('Books', 'Fiction, non-fiction, and educational books'),
+('Home Appliances', 'Appliances for daily home use');
+
+-- Products
+INSERT INTO Product (Name, Description, Price, InitialQuantity, CategoryID) VALUES
+('Apple iPhone 14', 'Latest Apple smartphone with A15 Bionic chip', 999.99, 15, 1),
+('Samsung Galaxy S23', 'Flagship Android smartphone from Samsung', 899.99, 20, 1),
+('MacBook Air M2', 'Lightweight Apple laptop with M2 chip', 1199.00, 10, 1),
+('The Alchemist', 'Inspirational novel by Paulo Coelho', 19.99, 50, 2),
+('Air Fryer XL', 'Large-capacity air fryer for healthy cooking', 149.00, 25, 3);
+
+-- Clients
+INSERT INTO Client (FullName, Email, Address) VALUES
+('Zakaria Ait', 'zakaria@example.com', '123 Fes Street, Morocco'),
+('Alice Dupont', 'alice.dupont@example.com', '75 Rue de Paris, France');
+
+-- =========================
+-- SIMULATING ORDERS & PAYMENTS
+-- =========================
+
+-- Zakaria's Order (OrderID = 1)
+INSERT INTO ClientOrder (ClientID, TotalAmount, Status) VALUES
+(1, 1218.99, 'Processing');
+
+-- Items in Zakaria's Order
+INSERT INTO OrderItem (OrderID, ProductID, Quantity, UnitPrice) VALUES
+(1, 3, 1, 1199.00), -- MacBook Air
+(1, 4, 1, 19.99);   -- The Alchemist
+
+-- Payment for Zakaria's Order
+INSERT INTO Payment (OrderID, Amount, PaymentMethod, Status) VALUES
+(1, 1218.99, 'Credit Card', 'Completed');
+
+-- Update Zakaria's order status
+UPDATE ClientOrder SET Status = 'Shipped' WHERE OrderID = 1;
+
+-- Alice's Order (OrderID = 2)
+INSERT INTO ClientOrder (ClientID, TotalAmount, Status) VALUES
+(2, 999.99, 'Pending');
+
+-- Items in Alice's Order
+INSERT INTO OrderItem (OrderID, ProductID, Quantity, UnitPrice) VALUES
+(2, 1, 1, 999.99); -- iPhone 14
+
+-- Failed Payment for Alice's Order
+INSERT INTO Payment (OrderID, Amount, PaymentMethod, Status) VALUES
+(2, 999.99, 'PayPal', 'Failed');
+
+-- =========================
+-- CREATING USEFUL VIEWS
+-- =========================
+
+-- View: Product stock overview
+CREATE VIEW ProductStockView AS
+SELECT
+    p.ProductID,
+    p.Name,
+    p.Description,
+    p.Price,
+    c.Name AS Category,
+    p.InitialQuantity,
+    COALESCE(p.InitialQuantity - SUM(CASE WHEN co.Status != 'Cancelled' THEN oi.Quantity ELSE 0 END), p.InitialQuantity) AS CurrentStock
+FROM
+    Product p
+LEFT JOIN
+    Category c ON p.CategoryID = c.CategoryID
+LEFT JOIN
+    OrderItem oi ON p.ProductID = oi.ProductID
+LEFT JOIN
+    ClientOrder co ON oi.OrderID = co.OrderID
+GROUP BY
+    p.ProductID;
+
+-- View: Order & payment tracking
+CREATE VIEW ClientOrderStatusView AS
+SELECT
+    co.OrderID,
+    co.OrderDate,
+    co.Status AS OrderStatus,
+    cl.FullName,
+    cl.Email,
+    p.PaymentDate,
+    p.Amount,
+    p.PaymentMethod,
+    p.Status AS PaymentStatus
+FROM
+    ClientOrder co
+JOIN
+    Client cl ON co.ClientID = cl.ClientID
+LEFT JOIN
+    Payment p ON co.OrderID = p.OrderID;
+
+-- =========================
+-- SAMPLE QUERIES (optional)
+-- =========================
+
+-- SELECT * FROM ProductStockView;
+-- SELECT * FROM ClientOrderStatusView WHERE Email = 'zakaria@example.com';
+-- SELECT * FROM ProductStockView WHERE CurrentStock < 5;

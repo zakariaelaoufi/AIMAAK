@@ -7,6 +7,7 @@ from relational_db.sql_service import initialize_db_and_schema
 from documents.documents_controller import router as documents_router
 from general.general_chat_controller import router as general_chat_router
 from relational_db.sql_controller import router as relational_db_router
+from prompt_type.routing_controller import router as prompt_type_router
 import logging
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -65,12 +66,8 @@ async def shutdown_event():
 app.include_router(general_chat_router)
 app.include_router(documents_router)
 app.include_router(relational_db_router)
+app.include_router(prompt_type_router)
 
 @app.get("/")
 def root():
     return {"message": "AIMaak Chatbot API is running!"}
-
-# @app.post("/answer")
-# async def aimaak_answer(query: dict = Body(...)):
-#     question = query.get("question")
-
