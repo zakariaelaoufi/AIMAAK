@@ -2,8 +2,8 @@ from fastapi import status, HTTPException, Body
 from typing import Optional
 from langchain_community.utilities import SQLDatabase
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
+from .prompts import nlp_result_explanation_prompt, sql_query_prompt
 from dotenv import load_dotenv
 import os
 import logging
@@ -35,33 +35,6 @@ def get_llm():
 
 aimaak_llm = get_llm()
 
-
-# Prompt templates
-sql_query_prompt = ChatPromptTemplate.from_template("""
-You are a skilled SQL assistant. Given the table schema and a natural language question in moroccan darija, arabic, or french, generate a syntactically correct and efficient SQL query that accurately answers the question.
-
-Schema:
-{schema}
-
-User Question:
-{question}
-
-SQL Query:
-""")
-
-nlp_result_explanation_prompt = ChatPromptTemplate.from_template("""
-You are a helpful assistant. Based on the user's question and the SQL query result provided, write a natural, clear, and concise moroccan darija response that summarizes the result in plain language.
-
-User Question:
-{question}
-
-Query Result:
-{result}
-
-Natural Language Response:
-""")
-
-
 # Chains
 def get_sql_query_chain():
     return sql_query_prompt | aimaak_llm | StrOutputParser()
@@ -72,12 +45,14 @@ def get_sql_query_response_chain():
 
 # DB utility functions
 async def initialize_database(uri: str) -> SQLDatabase:
-    return SQLDatabase.from_uri(uri)
+    return SQLDatabase.from_uri(uri, view_support=True)
 
 
 async def get_schema_info(database: SQLDatabase) -> str:
     return database.get_table_info()
 
+def get_schema():
+    return schema_cache
 
 async def initialize_db_and_schema():
     global db, schema_cache

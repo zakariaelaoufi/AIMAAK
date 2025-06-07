@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.params import Body
 from redis import Redis
 import httpx
 from documents.documents_service import initialize_qa_chat
@@ -39,8 +40,8 @@ async def startup_event():
         host=REDIS_HOST,
         port=REDIS_PORT,
         decode_responses=True,
-        username="default",
-        password=REDIS_PASSWORD,
+        # username="default",
+        # password=REDIS_PASSWORD,
     )
         app.state.http_client = httpx.AsyncClient()
         success2 = await initialize_db_and_schema()
@@ -68,3 +69,8 @@ app.include_router(relational_db_router)
 @app.get("/")
 def root():
     return {"message": "AIMaak Chatbot API is running!"}
+
+# @app.post("/answer")
+# async def aimaak_answer(query: dict = Body(...)):
+#     question = query.get("question")
+
