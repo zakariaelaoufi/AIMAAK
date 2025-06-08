@@ -3,6 +3,7 @@ from typing import Optional
 from langchain_community.utilities import SQLDatabase
 from langchain_core.output_parsers import StrOutputParser
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from .prompts import nlp_result_explanation_prompt, sql_query_prompt
 from dotenv import load_dotenv
 import os
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 # Load environment variables
 load_dotenv()
 GEN_API_KEY = os.getenv("GEN_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 # Constants
@@ -32,8 +34,13 @@ def get_llm():
         model="gemini-2.0-flash"
     )
 
+def get_llm_openai():
+    return ChatOpenAI(
+        temperature=0.4,
+        model="gpt-4o-mini"
+    )
 
-aimaak_llm = get_llm()
+aimaak_llm = get_llm_openai()
 
 # Chains
 def get_sql_query_chain():

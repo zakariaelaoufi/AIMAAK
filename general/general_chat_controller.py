@@ -2,6 +2,7 @@ from fastapi import APIRouter, Body, Request, status
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 import json
 import os
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ router = APIRouter(
 
 # Model setup
 GEN_API_KEY = os.environ.get("GEN_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 aitest = ChatGoogleGenerativeAI(
     google_api_key=GEN_API_KEY,
     temperature=0.4,
@@ -69,6 +71,12 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
 ])
 
+def get_llm_openai():
+    return ChatOpenAI(
+        temperature=0.4,
+        model="gpt-4o-mini"
+    )
+
 
 @router.get("", status_code=status.HTTP_200_OK)
 async def get_chatbot_history(request: Request):
@@ -101,7 +109,7 @@ async def post_chatbot_response(request: Request, query: dict = Body(...)):
 
     # Run prompt + model
     try:
-        chain = prompt | aitest
+        chain = prompt | get_llm_openai()
         result = chain.invoke({"input": message, "chat_history": history[-10:]})
         answer = result.content or "Ma 3reftch."
     except Exception as e:

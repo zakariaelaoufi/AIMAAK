@@ -41,8 +41,8 @@ async def startup_event():
         host=REDIS_HOST,
         port=REDIS_PORT,
         decode_responses=True,
-        # username="default",
-        # password=REDIS_PASSWORD,
+        username="default",
+        password=REDIS_PASSWORD,
     )
         app.state.http_client = httpx.AsyncClient()
         success2 = await initialize_db_and_schema()
