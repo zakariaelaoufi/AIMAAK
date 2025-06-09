@@ -70,3 +70,4 @@ langchain-community~=0.3.24
 pypdf
 mysql-connector-python
 faiss-cpu
+langchain_openai
