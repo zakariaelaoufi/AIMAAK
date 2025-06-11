@@ -114,6 +114,8 @@ async def post_chatbot_response(request: Request, query: dict = Body(...)):
         answer = result.content or "Ma 3reftch."
     except Exception as e:
         return {"error": f"Failed to generate response: {e}"}
+    
+    print(f"AI Response: {answer}")
 
     # Save updated history
     history.append(HumanMessage(content=message))
