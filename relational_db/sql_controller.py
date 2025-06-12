@@ -1,5 +1,8 @@
 from fastapi import APIRouter, status, HTTPException, Body
 from .sql_service import generate_sql_query, run_query, generate_natural_language_response, get_schema
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 CONNECTIVITY_QUERY = "SELECT 1;"
@@ -21,6 +24,9 @@ async def client_question_answer(payload: dict = Body(...)):
         raise HTTPException(status_code=400, detail="Missing question.")
     sql_query = await generate_sql_query(question)
     sql_query = clean_query(sql_query)
+    print("salam")
+    print(sql_query)
+    logger.info(sql_query)
     dangerous_keywords = ['DROP', 'DELETE', 'TRUNCATE', 'ALTER', 'CREATE', 'INSERT', 'UPDATE']
     # basic sql injection protection
     query_upper = sql_query.upper()
