@@ -44,10 +44,10 @@ aimaak_llm = get_llm_openai()
 
 # Chains
 def get_sql_query_chain():
-    return sql_query_prompt | aimaak_llm | StrOutputParser()
+    return sql_query_prompt | get_llm_openai() | StrOutputParser()
 
 def get_sql_query_response_chain():
-    return nlp_result_explanation_prompt | aimaak_llm
+    return nlp_result_explanation_prompt | get_llm()
 
 
 # DB utility functions
