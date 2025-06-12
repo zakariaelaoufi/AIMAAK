@@ -22,6 +22,12 @@ aitest = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash"
 )
 
+def get_llm_openai():
+    return ChatOpenAI(
+        temperature=0.4,
+        model="gpt-4o-mini"
+    )
+
 # Prompt template
 prompt = ChatPromptTemplate.from_messages([
     ("system", (
@@ -71,12 +77,6 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
 ])
 
-def get_llm_openai():
-    return ChatOpenAI(
-        temperature=0.4,
-        model="gpt-4o-mini"
-    )
-
 
 @router.get("", status_code=status.HTTP_200_OK)
 async def get_chatbot_history(request: Request):
@@ -109,7 +109,7 @@ async def post_chatbot_response(request: Request, query: dict = Body(...)):
 
     # Run prompt + model
     try:
-        chain = prompt | get_llm_openai()
+        chain = prompt | aitest
         result = chain.invoke({"input": message, "chat_history": history[-10:]})
         answer = result.content or "Ma 3reftch."
     except Exception as e:
